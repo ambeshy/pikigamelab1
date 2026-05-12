@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра Пики - Версия 2 (Кастомизация + Кооператив)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-container {
+            background: rgba(0,0,0,0.85);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 700px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: gold;
+        }
+        .customize-panel {
+            background: #2c2c3e;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .customize-panel input, .customize-panel select {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 8px;
+            border: none;
+        }
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background: white;
+            color: black;
+            width: 130px;
+            height: 170px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .player-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .score {
+            font-size: 24px;
+            margin: 20px 0;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        button {
+            background: gold;
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ffd700;
+            transform: scale(1.05);
+        }
+        .result {
+            font-size: 18px;
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 10px;
+        }
+        .turn-indicator {
+            background: #ff9800;
+            color: #1a1a2e;
+            padding: 8px;
+            border-radius: 20px;
+            margin: 10px auto;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .suit-heart, .suit-diamond { color: red; }
+        .suit-club, .suit-spade { color: black; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>♠ Игра ПИКИ — Версия 2 ♠</h1>
+    <p>Кастомизация + Кооперативный режим</p>
+
+    <div class="customize-panel">
+        <h3>🎨 Кастомизация</h3>
+        <input type="text" id="player1Name" placeholder="Имя игрока 1" value="Воин">
+        <select id="player1Symbol">
+            <option value="⚔️">⚔️ Меч</option>
+            <option value="🔥">🔥 Огонь</option>
+            <option value="⭐">⭐ Звезда</option>
+        </select>
+        <br>
+        <input type="text" id="player2Name" placeholder="Имя игрока 2" value="Маг">
+        <select id="player2Symbol">
+            <option value="🛡️">🛡️ Щит</option>
+            <option value="❄️">❄️ Лёд</option>
+            <option value="💎">💎 Алмаз</option>
+        </select>
+        <br>
+        <button id="applyCustomizeBtn">✅ Применить кастомизацию</button>
+    </div>
+
+    <div class="cards">
+        <div>
+            <div class="card" id="card1">?</div>
+            <div class="player-name" id="player1Display">Игрок 1</div>
+        </div>
+        <div>
+            <div class="card" id="card2">?</div>
+            <div class="player-name" id="player2Display">Игрок 2</div>
+        </div>
+    </div>
+
+    <div>
+        <span class="turn-indicator" id="turnIndicator">🎮 Ход игрока 1</span>
+    </div>
+
+    <div class="score" id="score">
+        Счёт: 0 : 0
+    </div>
+
+    <button id="nextTurnBtn">▶ Следующий ход (взять карту)</button>
+    <button id="resetBtn">🔄 Сбросить игру</button>
+
+    <div class="result" id="result">
+        Настройте имена и символы, затем нажимайте "Следующий ход"
+    </div>
+</div>
+
+<script>
+    const values = [6, 7, 8, 9, 10, 11, 12, 13, 14];
+    const valueNames = { 11: "Валет", 12: "Дама", 13: "Король", 14: "Туз" };
+    const suits = ["♥", "♦", "♣", "♠"];
+    const suitNames = { "♥": "червы", "♦": "бубны", "♣": "крести", "♠": "пики" };
+
+    let score1 = 0, score2 = 0;
+    let player1Name = "Воин", player2Name = "Маг";
+    let player1Symbol = "⚔️", player2Symbol = "🛡️";
+    
+    let currentTurn = 1;  // 1 = игрок 1, 2 = игрок 2
+    let waitingCard1 = null;
+    let waitingCard2 = null;
+    let roundActive = false;
+
+    function getRandomCard() {
+        const value = values[Math.floor(Math.random() * values.length)];
+        const suit = suits[Math.floor(Math.random() * suits.length)];
+        return { value, suit };
+    }
+
+    function getCardDisplay(card) {
+        let displayValue = card.value;
+        if (valueNames[card.value]) displayValue = valueNames[card.value];
+        return `${displayValue}${card.suit}`;
+    }
+
+    function getSuitClass(suit) {
+        if (suit === "♥" || suit === "♦") return "suit-heart";
+        return "suit-club";
+    }
+
+    function compareCards(card1, card2) {
+        if (card1.suit === "♠" && card2.suit !== "♠") return 1;
+        if (card2.suit === "♠" && card1.suit !== "♠") return 2;
+        if (card1.value > card2.value) return 1;
+        if (card1.value < card2.value) return 2;
+        return 0;
+    }
+
+    function updateUI() {
+        document.getElementById("player1Display").innerHTML = `${player1Name} ${player1Symbol}`;
+        document.getElementById("player2Display").innerHTML = `${player2Name} ${player2Symbol}`;
+        document.getElementById("score").innerHTML = `Счёт: ${score1} : ${score2}`;
+        document.getElementById("turnIndicator").innerHTML = currentTurn === 1 ? `🎮 Ход ${player1Name} ${player1Symbol}` : `🎮 Ход ${player2Name} ${player2Symbol}`;
+    }
+
+    function applyCustomization() {
+        let newName1 = document.getElementById("player1Name").value.trim();
+        let newName2 = document.getElementById("player2Name").value.trim();
+        if (newName1) player1Name = newName1;
+        if (newName2) player2Name = newName2;
+        player1Symbol = document.getElementById("player1Symbol").value;
+        player2Symbol = document.getElementById("player2Symbol").value;
+        
+        updateUI();
+        document.getElementById("result").innerHTML = "✅ Кастомизация применена! Начинайте игру.";
+    }
+
+    function nextTurn() {
+        if (!roundActive) {
+            // Начинаем новый раунд
+            roundActive = true;
+            currentTurn = 1;
+            waitingCard1 = null;
+            waitingCard2 = null;
+            updateUI();
+            document.getElementById("result").innerHTML = `🎴 Новый раунд! ${player1Name}, возьмите карту.`;
+            document.getElementById("card1").innerHTML = "?";
+            document.getElementById("card2").innerHTML = "?";
+            return;
+        }
+
+        // Если раунд активен
+        if (currentTurn === 1 && waitingCard1 === null) {
+            // Игрок 1 берёт карту
+            waitingCard1 = getRandomCard();
+            const card1El = document.getElementById("card1");
+            card1El.innerHTML = `<span class="${getSuitClass(waitingCard1.suit)}">${getCardDisplay(waitingCard1)}</span>`;
+            document.getElementById("result").innerHTML = `${player1Name} взял карту. Теперь ход ${player2Name}.`;
+            currentTurn = 2;
+            updateUI();
+        } 
+        else if (currentTurn === 2 && waitingCard2 === null) {
+            // Игрок 2 берёт карту
+            waitingCard2 = getRandomCard();
+            const card2El = document.getElementById("card2");
+            card2El.innerHTML = `<span class="${getSuitClass(waitingCard2.suit)}">${getCardDisplay(waitingCard2)}</span>`;
+            
+            // Сравниваем карты
+            const winner = compareCards(waitingCard1, waitingCard2);
+            let resultText = "";
+            
+            if (winner === 1) {
+                score1++;
+                resultText = `🏆 ${player1Name} ${player1Symbol} победил! ${getCardDisplay(waitingCard1)} > ${getCardDisplay(waitingCard2)}`;
+            } else if (winner === 2) {
+                score2++;
+                resultText = `🏆 ${player2Name} ${player2Symbol} победил! ${getCardDisplay(waitingCard2)} > ${getCardDisplay(waitingCard1)}`;
+            } else {
+                resultText = `🤝 Ничья! ${getCardDisplay(waitingCard1)} = ${getCardDisplay(waitingCard2)}`;
+            }
+            
+            document.getElementById("result").innerHTML = resultText;
+            document.getElementById("score").innerHTML = `Счёт: ${score1} : ${score2}`;
+            
+            // Раунд окончен
+            roundActive = false;
+            currentTurn = 1;
+            updateUI();
+            document.getElementById("result").innerHTML += "<br>👉 Нажмите 'Следующий ход' для нового раунда.";
+        }
+    }
+
+    function resetGame() {
+        score1 = 0;
+        score2 = 0;
+        currentTurn = 1;
+        roundActive = false;
+        waitingCard1 = null;
+        waitingCard2 = null;
+        updateUI();
+        document.getElementById("card1").innerHTML = "?";
+        document.getElementById("card2").innerHTML = "?";
+        document.getElementById("result").innerHTML = "Игра сброшена. Нажмите 'Следующий ход' для начала.";
+    }
+
+    document.getElementById("applyCustomizeBtn").addEventListener("click", applyCustomization);
+    document.getElementById("nextTurnBtn").addEventListener("click", nextTurn);
+    document.getElementById("resetBtn").addEventListener("click", resetGame);
+    
+    // Инициализация
+    updateUI();
+    resetGame();
+</script>
+</body>
+</html>
