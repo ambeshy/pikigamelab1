@@ -1,81 +1,202 @@
-# main.py - Первая версия игры "Пики"
-import random
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра Пики - Версия 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a472a, #0e2a1a);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-container {
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: gold;
+            margin-bottom: 10px;
+        }
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            color: black;
+            width: 120px;
+            height: 160px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+        .card span {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        .player-label {
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .score {
+            font-size: 24px;
+            margin: 20px 0;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        button {
+            background: gold;
+            color: #1a472a;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ffd700;
+            transform: scale(1.05);
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 10px;
+        }
+        .suit-heart, .suit-diamond { color: red; }
+        .suit-club, .suit-spade { color: black; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>♠ Игра ПИКИ ♠</h1>
+    <h3>Версия 1 — базовая</h3>
+    <p>Правила: ♠ пики бьют любую масть, иначе сравнивается номинал</p>
 
-# Карты: значение и масть
-cards_values = [6, 7, 8, 9, 10, 11, 12, 13, 14]  # 11=валет, 12=дама, 13=король, 14=туз
-suits = ['♥', '♦', '♣', '♠']
+    <div class="cards">
+        <div>
+            <div class="card" id="card1">?</div>
+            <div class="player-label">Игрок 1</div>
+        </div>
+        <div>
+            <div class="card" id="card2">?</div>
+            <div class="player-label">Игрок 2</div>
+        </div>
+    </div>
 
-def get_random_card():
-    """Возвращает случайную карту (значение, масть)"""
-    value = random.choice(cards_values)
-    suit = random.choice(suits)
-    return (value, suit)
+    <div class="score" id="score">
+        Счёт: 0 : 0
+    </div>
 
-def compare_cards(card1, card2):
-    """
-    Сравнение карт. Правила:
-    - Масть '♠' (пики) всегда бьёт любую другую масть
-    - Если масти одинаковые или обе не пики — сравнивается значение
-    """
-    # Если первая карта — пики, а вторая — нет
-    if card1[1] == '♠' and card2[1] != '♠':
-        return 1  # победа игрока 1
-    # Если вторая карта — пики, а первая — нет
-    if card2[1] == '♠' and card1[1] != '♠':
-        return 2  # победа игрока 2
-    # Иначе сравниваем значения
-    if card1[0] > card2[0]:
-        return 1
-    elif card1[0] < card2[0]:
-        return 2
-    else:
-        return 0  # ничья
+    <button id="playBtn">▶ Сыграть раунд</button>
+    <button id="resetBtn">🔄 Сбросить игру</button>
 
-def play_round(round_num):
-    """Один раунд игры"""
-    print(f"\n--- Раунд {round_num} ---")
-    card1 = get_random_card()
-    card2 = get_random_card()
-    
-    print(f"Игрок 1: {card1[0]}{card1[1]}")
-    print(f"Игрок 2: {card2[0]}{card2[1]}")
-    
-    winner = compare_cards(card1, card2)
-    if winner == 1:
-        print("Результат: Игрок 1 победил!")
-        return 1
-    elif winner == 2:
-        print("Результат: Игрок 2 победил!")
-        return 2
-    else:
-        print("Результат: Ничья!")
-        return 0
+    <div class="result" id="result">
+        Нажмите "Сыграть раунд"
+    </div>
+</div>
 
-def main():
-    """Главная функция игры"""
-    print("=== Игра ПИКИ (версия 1) ===")
-    print("Правила: Пики бьют любую масть, иначе сравнивается номинал")
-    
-    score1 = 0  # счёт игрока 1
-    score2 = 0  # счёт игрока 2
-    
-    # Играем 3 раунда
-    for round_num in range(1, 4):
-        winner = play_round(round_num)
-        if winner == 1:
-            score1 += 1
-        elif winner == 2:
-            score2 += 1
-    
-    # Итог
-    print("\n=== ИТОГ ИГРЫ ===")
-    print(f"Счёт: Игрок 1 = {score1} : {score2} = Игрок 2")
-    if score1 > score2:
-        print("Победил ИГРОК 1!")
-    elif score2 > score1:
-        print("Победил ИГРОК 2!")
-    else:
-        print("НИЧЬЯ!")
+<script>
+    // Номинал карт
+    const values = [6, 7, 8, 9, 10, 11, 12, 13, 14];
+    const valueNames = { 11: "Валет", 12: "Дама", 13: "Король", 14: "Туз" };
+    const suits = ["♥", "♦", "♣", "♠"];
+    const suitNames = { "♥": "червы", "♦": "бубны", "♣": "крести", "♠": "пики" };
 
-if __name__ == "__main__":
-    main()
+    let score1 = 0;
+    let score2 = 0;
+
+    function getRandomCard() {
+        const value = values[Math.floor(Math.random() * values.length)];
+        const suit = suits[Math.floor(Math.random() * suits.length)];
+        return { value, suit };
+    }
+
+    function getCardDisplay(card) {
+        let displayValue = card.value;
+        if (valueNames[card.value]) displayValue = valueNames[card.value];
+        return `${displayValue}${card.suit}`;
+    }
+
+    function getSuitClass(suit) {
+        if (suit === "♥" || suit === "♦") return "suit-heart";
+        return "suit-club";
+    }
+
+    function compareCards(card1, card2) {
+        // Пики бьют любую масть
+        if (card1.suit === "♠" && card2.suit !== "♠") return 1;
+        if (card2.suit === "♠" && card1.suit !== "♠") return 2;
+        // Сравнение по значению
+        if (card1.value > card2.value) return 1;
+        if (card1.value < card2.value) return 2;
+        return 0;
+    }
+
+    function playRound() {
+        const card1 = getRandomCard();
+        const card2 = getRandomCard();
+
+        // Обновляем отображение карт
+        const card1El = document.getElementById("card1");
+        const card2El = document.getElementById("card2");
+        
+        card1El.innerHTML = `<span class="${getSuitClass(card1.suit)}">${getCardDisplay(card1)}</span>`;
+        card2El.innerHTML = `<span class="${getSuitClass(card2.suit)}">${getCardDisplay(card2)}</span>`;
+
+        const winner = compareCards(card1, card2);
+        let resultText = "";
+        
+        if (winner === 1) {
+            score1++;
+            resultText = `🏆 Игрок 1 победил! ${getCardDisplay(card1)} (${suitNames[card1.suit]}) > ${getCardDisplay(card2)} (${suitNames[card2.suit]})`;
+        } else if (winner === 2) {
+            score2++;
+            resultText = `🏆 Игрок 2 победил! ${getCardDisplay(card2)} (${suitNames[card2.suit]}) > ${getCardDisplay(card1)} (${suitNames[card1.suit]})`;
+        } else {
+            resultText = `🤝 Ничья! ${getCardDisplay(card1)} = ${getCardDisplay(card2)}`;
+        }
+
+        document.getElementById("score").innerHTML = `Счёт: ${score1} : ${score2}`;
+        document.getElementById("result").innerHTML = resultText;
+    }
+
+    function resetGame() {
+        score1 = 0;
+        score2 = 0;
+        document.getElementById("score").innerHTML = `Счёт: 0 : 0`;
+        document.getElementById("result").innerHTML = "Игра сброшена. Начните новый раунд!";
+        document.getElementById("card1").innerHTML = "?";
+        document.getElementById("card2").innerHTML = "?";
+    }
+
+    document.getElementById("playBtn").addEventListener("click", playRound);
+    document.getElementById("resetBtn").addEventListener("click", resetGame);
+</script>
+</body>
+</html>
