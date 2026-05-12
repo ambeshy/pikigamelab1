@@ -1,0 +1,81 @@
+# main.py - Первая версия игры "Пики"
+import random
+
+# Карты: значение и масть
+cards_values = [6, 7, 8, 9, 10, 11, 12, 13, 14]  # 11=валет, 12=дама, 13=король, 14=туз
+suits = ['♥', '♦', '♣', '♠']
+
+def get_random_card():
+    """Возвращает случайную карту (значение, масть)"""
+    value = random.choice(cards_values)
+    suit = random.choice(suits)
+    return (value, suit)
+
+def compare_cards(card1, card2):
+    """
+    Сравнение карт. Правила:
+    - Масть '♠' (пики) всегда бьёт любую другую масть
+    - Если масти одинаковые или обе не пики — сравнивается значение
+    """
+    # Если первая карта — пики, а вторая — нет
+    if card1[1] == '♠' and card2[1] != '♠':
+        return 1  # победа игрока 1
+    # Если вторая карта — пики, а первая — нет
+    if card2[1] == '♠' and card1[1] != '♠':
+        return 2  # победа игрока 2
+    # Иначе сравниваем значения
+    if card1[0] > card2[0]:
+        return 1
+    elif card1[0] < card2[0]:
+        return 2
+    else:
+        return 0  # ничья
+
+def play_round(round_num):
+    """Один раунд игры"""
+    print(f"\n--- Раунд {round_num} ---")
+    card1 = get_random_card()
+    card2 = get_random_card()
+    
+    print(f"Игрок 1: {card1[0]}{card1[1]}")
+    print(f"Игрок 2: {card2[0]}{card2[1]}")
+    
+    winner = compare_cards(card1, card2)
+    if winner == 1:
+        print("Результат: Игрок 1 победил!")
+        return 1
+    elif winner == 2:
+        print("Результат: Игрок 2 победил!")
+        return 2
+    else:
+        print("Результат: Ничья!")
+        return 0
+
+def main():
+    """Главная функция игры"""
+    print("=== Игра ПИКИ (версия 1) ===")
+    print("Правила: Пики бьют любую масть, иначе сравнивается номинал")
+    
+    score1 = 0  # счёт игрока 1
+    score2 = 0  # счёт игрока 2
+    
+    # Играем 3 раунда
+    for round_num in range(1, 4):
+        winner = play_round(round_num)
+        if winner == 1:
+            score1 += 1
+        elif winner == 2:
+            score2 += 1
+    
+    # Итог
+    print("\n=== ИТОГ ИГРЫ ===")
+    print(f"Счёт: Игрок 1 = {score1} : {score2} = Игрок 2")
+    if score1 > score2:
+        print("Победил ИГРОК 1!")
+    elif score2 > score1:
+        print("Победил ИГРОК 2!")
+    else:
+        print("НИЧЬЯ!")
+
+if __name__ == "__main__":
+    main()
